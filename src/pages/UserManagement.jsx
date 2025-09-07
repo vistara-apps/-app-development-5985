@@ -4,7 +4,7 @@ import DataGrid from '../components/DataGrid'
 import Modal from '../components/Modal'
 import FormField from '../components/FormField'
 import PermissionGate from '../components/PermissionGate'
-import { Users, Plus, Shield, ShieldCheck, ShieldX } from 'lucide-react'
+import { Users, Plus, Shield, ShieldCheck, ShieldOff } from 'lucide-react'
 
 const UserManagement = () => {
   const { users, addUser, updateUser, deleteUser, USER_ROLES, currentUser } = useAuth()
@@ -31,7 +31,7 @@ const UserManagement = () => {
       case USER_ROLES.MANAGER:
         return <Shield className="h-4 w-4 text-blue-600" />
       default:
-        return <ShieldX className="h-4 w-4 text-gray-600" />
+        return <ShieldOff className="h-4 w-4 text-gray-600" />
     }
   }
 
@@ -156,7 +156,7 @@ const UserManagement = () => {
       role={USER_ROLES.ADMIN}
       fallback={
         <div className="text-center py-12">
-          <ShieldX className="mx-auto h-12 w-12 text-gray-400" />
+          <ShieldOff className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-2 text-sm font-medium text-gray-900">Access Denied</h3>
           <p className="mt-1 text-sm text-gray-500">You don't have permission to access user management.</p>
         </div>
@@ -261,7 +261,7 @@ const UserManagement = () => {
 
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <ShieldX className="h-5 w-5 text-gray-600 mr-2" />
+                <ShieldOff className="h-5 w-5 text-gray-600 mr-2" />
                 <span className="text-sm font-medium text-gray-900">Regular Users</span>
               </div>
               <div className="flex items-center">

@@ -5,7 +5,7 @@ import DataGrid from '../components/DataGrid'
 import Modal from '../components/Modal'
 import FormField from '../components/FormField'
 import PermissionGate from '../components/PermissionGate'
-import { Plus, Database, Shield, ShieldCheck, ShieldX, Settings as SettingsIcon } from 'lucide-react'
+import { Plus, Database, Shield, ShieldCheck, ShieldOff, Settings as SettingsIcon } from 'lucide-react'
 
 const Settings = () => {
   const { customFields, addCustomField, updateCustomField, deleteCustomField } = useData()
@@ -387,7 +387,7 @@ const Settings = () => {
                   <div className="flex items-center">
                     {role === USER_ROLES.ADMIN && <ShieldCheck className="h-5 w-5 text-red-600 mr-2" />}
                     {role === USER_ROLES.MANAGER && <Shield className="h-5 w-5 text-blue-600 mr-2" />}
-                    {role === USER_ROLES.USER && <ShieldX className="h-5 w-5 text-gray-600 mr-2" />}
+                    {role === USER_ROLES.USER && <ShieldOff className="h-5 w-5 text-gray-600 mr-2" />}
                     <span className="font-medium text-gray-900 capitalize">{role}</span>
                   </div>
                   <div className="w-48">

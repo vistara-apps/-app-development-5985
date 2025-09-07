@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useAuth } from '../contexts/AuthContext'
 import { Edit, Trash2, Plus } from 'lucide-react'
 
 const DataGrid = ({ 
@@ -45,10 +46,12 @@ const DataGrid = ({
     })
   }, [data, sortConfig])
 
+  const { canViewField } = useAuth()
+
   const allColumns = [
     ...columns,
     ...customFields
-      .filter(field => field.entityType === entityType)
+      .filter(field => field.entityType === entityType && canViewField(field))
       .map(field => ({
         key: `custom_${field.fieldId}`,
         header: field.fieldName,

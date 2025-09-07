@@ -1,20 +1,32 @@
 import React from 'react'
+import { useAuth } from '../contexts/AuthContext'
+import PermissionGate from './PermissionGate'
 import { 
   LayoutDashboard, 
   Users, 
   UserPlus, 
   Settings, 
   Menu,
-  X
+  X,
+  Shield,
+  LogOut,
+  User
 } from 'lucide-react'
 
 const AppShell = ({ children, currentPage, onPageChange }) => {
+  const { currentUser, logout, USER_ROLES } = useAuth()
   const [sidebarOpen, setSidebarOpen] = React.useState(false)
 
   const navigation = [
     { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
     { id: 'leads', name: 'Leads', icon: UserPlus },
     { id: 'contacts', name: 'Contacts', icon: Users },
+    { 
+      id: 'users', 
+      name: 'User Management', 
+      icon: Shield, 
+      requiresRole: USER_ROLES.ADMIN 
+    },
     { id: 'settings', name: 'Settings', icon: Settings },
   ]
 
@@ -56,6 +68,33 @@ const AppShell = ({ children, currentPage, onPageChange }) => {
               {navigation.map((item) => {
                 const Icon = item.icon
                 const isActive = currentPage === item.id
+                
+                // Check if item requires specific role
+                if (item.requiresRole) {
+                  return (
+                    <PermissionGate key={item.id} role={item.requiresRole} showFallback={false}>
+                      <li>
+                        <button
+                          onClick={() => {
+                            onPageChange(item.id)
+                            setSidebarOpen(false)
+                          }}
+                          className={`
+                            w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors
+                            ${isActive 
+                              ? 'bg-white bg-opacity-20 text-white' 
+                              : 'text-purple-200 hover:bg-white hover:bg-opacity-10 hover:text-white'
+                            }
+                          `}
+                        >
+                          <Icon className="mr-3 h-5 w-5" />
+                          {item.name}
+                        </button>
+                      </li>
+                    </PermissionGate>
+                  )
+                }
+                
                 return (
                   <li key={item.id}>
                     <button
@@ -79,6 +118,32 @@ const AppShell = ({ children, currentPage, onPageChange }) => {
               })}
             </ul>
           </nav>
+
+          {/* User Info */}
+          <div className="px-4 pb-4">
+            <div className="bg-white bg-opacity-10 rounded-lg p-4">
+              <div className="flex items-center">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white bg-opacity-20">
+                  <User className="h-4 w-4 text-white" />
+                </div>
+                <div className="ml-3 flex-1">
+                  <p className="text-sm font-medium text-white">
+                    {currentUser?.firstName} {currentUser?.lastName}
+                  </p>
+                  <p className="text-xs text-purple-200 capitalize">
+                    {currentUser?.role}
+                  </p>
+                </div>
+                <button
+                  onClick={logout}
+                  className="text-purple-200 hover:text-white transition-colors"
+                  title="Logout"
+                >
+                  <LogOut className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -95,7 +160,14 @@ const AppShell = ({ children, currentPage, onPageChange }) => {
           
           <div className="flex items-center space-x-4">
             <div className="text-sm text-gray-600">
-              Welcome back! Customize your CRM your way.
+              Welcome back, {currentUser?.firstName}! Customize your CRM your way.
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
+                <span className="text-sm font-medium text-white">
+                  {currentUser?.firstName?.[0]}{currentUser?.lastName?.[0]}
+                </span>
+              </div>
             </div>
           </div>
         </header>

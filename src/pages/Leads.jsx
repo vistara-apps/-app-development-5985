@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
 import { useData } from '../contexts/DataContext'
+import { useAuth } from '../contexts/AuthContext'
 import DataGrid from '../components/DataGrid'
 import Modal from '../components/Modal'
 import FormField from '../components/FormField'
 
 const Leads = () => {
   const { leads, customFields, addLead, updateLead, deleteLead } = useData()
+  const { canEditField, canViewField } = useAuth()
   const [showModal, setShowModal] = useState(false)
   const [editingLead, setEditingLead] = useState(null)
   const [formData, setFormData] = useState({
@@ -171,21 +173,24 @@ const Leads = () => {
           </div>
 
           {/* Custom Fields */}
-          {leadCustomFields.length > 0 && (
+          {leadCustomFields.filter(field => canViewField(field)).length > 0 && (
             <div className="border-t pt-4">
               <h4 className="text-lg font-medium text-gray-900 mb-4">Custom Fields</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {leadCustomFields.map((field) => (
-                  <FormField
-                    key={field.fieldId}
-                    label={field.fieldName}
-                    name={field.fieldId}
-                    type={field.fieldType}
-                    value={formData.customFields[field.fieldId] || ''}
-                    onChange={(e) => handleCustomFieldChange(field.fieldId, e.target.value)}
-                    required={field.isRequired}
-                  />
-                ))}
+                {leadCustomFields
+                  .filter(field => canViewField(field))
+                  .map((field) => (
+                    <FormField
+                      key={field.fieldId}
+                      label={field.fieldName}
+                      name={field.fieldId}
+                      type={field.fieldType}
+                      value={formData.customFields[field.fieldId] || ''}
+                      onChange={(e) => handleCustomFieldChange(field.fieldId, e.target.value)}
+                      required={field.isRequired}
+                      disabled={!canEditField(field)}
+                    />
+                  ))}
               </div>
             </div>
           )}

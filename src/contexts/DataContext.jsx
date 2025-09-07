@@ -76,6 +76,11 @@ export const DataProvider = ({ children }) => {
           fieldType: 'text',
           entityType: 'lead',
           isRequired: false,
+          permissions: {
+            admin: 'full',
+            manager: 'edit',
+            user: 'view'
+          },
           createdAt: new Date().toISOString()
         },
         {
@@ -84,6 +89,11 @@ export const DataProvider = ({ children }) => {
           fieldType: 'number',
           entityType: 'lead',
           isRequired: false,
+          permissions: {
+            admin: 'full',
+            manager: 'edit',
+            user: 'none'
+          },
           createdAt: new Date().toISOString()
         }
       ]

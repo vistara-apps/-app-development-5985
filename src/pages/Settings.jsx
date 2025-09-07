@@ -1,20 +1,31 @@
 import React, { useState } from 'react'
 import { useData } from '../contexts/DataContext'
+import { useAuth } from '../contexts/AuthContext'
 import DataGrid from '../components/DataGrid'
 import Modal from '../components/Modal'
 import FormField from '../components/FormField'
-import { Plus, Database } from 'lucide-react'
+import PermissionGate from '../components/PermissionGate'
+import { Plus, Database, Shield, ShieldCheck, ShieldX, Settings as SettingsIcon } from 'lucide-react'
 
 const Settings = () => {
   const { customFields, addCustomField, updateCustomField, deleteCustomField } = useData()
+  const { USER_ROLES, FIELD_PERMISSIONS, users } = useAuth()
   const [showModal, setShowModal] = useState(false)
+  const [showPermissionModal, setShowPermissionModal] = useState(false)
   const [editingField, setEditingField] = useState(null)
+  const [permissionField, setPermissionField] = useState(null)
   const [formData, setFormData] = useState({
     fieldName: '',
     fieldType: 'text',
     entityType: 'lead',
-    isRequired: false
+    isRequired: false,
+    permissions: {
+      [USER_ROLES.ADMIN]: FIELD_PERMISSIONS.FULL,
+      [USER_ROLES.MANAGER]: FIELD_PERMISSIONS.EDIT,
+      [USER_ROLES.USER]: FIELD_PERMISSIONS.VIEW
+    }
   })
+  const [permissionData, setPermissionData] = useState({})
 
   const fieldTypeOptions = [
     { value: 'text', label: 'Text' },
@@ -67,6 +78,21 @@ const Settings = () => {
       key: 'createdAt',
       header: 'Created',
       render: (field) => new Date(field.createdAt).toLocaleDateString()
+    },
+    {
+      key: 'permissions',
+      header: 'Permissions',
+      render: (field) => (
+        <PermissionGate role={USER_ROLES.ADMIN}>
+          <button
+            onClick={() => handleManagePermissions(field)}
+            className="inline-flex items-center px-2 py-1 text-xs font-medium text-primary hover:text-primary/80"
+          >
+            <Shield className="h-3 w-3 mr-1" />
+            Manage
+          </button>
+        </PermissionGate>
+      )
     }
   ]
 
@@ -76,7 +102,12 @@ const Settings = () => {
       fieldName: '',
       fieldType: 'text',
       entityType: 'lead',
-      isRequired: false
+      isRequired: false,
+      permissions: {
+        [USER_ROLES.ADMIN]: FIELD_PERMISSIONS.FULL,
+        [USER_ROLES.MANAGER]: FIELD_PERMISSIONS.EDIT,
+        [USER_ROLES.USER]: FIELD_PERMISSIONS.VIEW
+      }
     })
     setShowModal(true)
   }
@@ -87,7 +118,12 @@ const Settings = () => {
       fieldName: field.fieldName,
       fieldType: field.fieldType,
       entityType: field.entityType,
-      isRequired: field.isRequired
+      isRequired: field.isRequired,
+      permissions: field.permissions || {
+        [USER_ROLES.ADMIN]: FIELD_PERMISSIONS.FULL,
+        [USER_ROLES.MANAGER]: FIELD_PERMISSIONS.EDIT,
+        [USER_ROLES.USER]: FIELD_PERMISSIONS.VIEW
+      }
     })
     setShowModal(true)
   }
@@ -117,6 +153,40 @@ const Settings = () => {
       [name]: type === 'checkbox' ? checked : value
     }))
   }
+
+  const handleManagePermissions = (field) => {
+    setPermissionField(field)
+    setPermissionData(field.permissions || {
+      [USER_ROLES.ADMIN]: FIELD_PERMISSIONS.FULL,
+      [USER_ROLES.MANAGER]: FIELD_PERMISSIONS.EDIT,
+      [USER_ROLES.USER]: FIELD_PERMISSIONS.VIEW
+    })
+    setShowPermissionModal(true)
+  }
+
+  const handlePermissionChange = (roleOrUserId, permission) => {
+    setPermissionData(prev => ({
+      ...prev,
+      [roleOrUserId]: permission
+    }))
+  }
+
+  const handleSavePermissions = () => {
+    if (permissionField) {
+      updateCustomField(permissionField.fieldId, {
+        ...permissionField,
+        permissions: permissionData
+      })
+    }
+    setShowPermissionModal(false)
+  }
+
+  const getPermissionOptions = () => [
+    { value: FIELD_PERMISSIONS.NONE, label: 'No Access' },
+    { value: FIELD_PERMISSIONS.VIEW, label: 'View Only' },
+    { value: FIELD_PERMISSIONS.EDIT, label: 'View & Edit' },
+    { value: FIELD_PERMISSIONS.FULL, label: 'Full Control' }
+  ]
 
   return (
     <div className="space-y-6">
@@ -282,6 +352,75 @@ const Settings = () => {
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* Permission Management Modal */}
+      <Modal
+        isOpen={showPermissionModal}
+        onClose={() => setShowPermissionModal(false)}
+        title={`Manage Permissions: ${permissionField?.fieldName}`}
+        size="lg"
+      >
+        <div className="space-y-6">
+          <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+            <div className="flex">
+              <Shield className="h-5 w-5 text-blue-400 mt-0.5" />
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-blue-800">Permission Levels</h3>
+                <div className="mt-2 text-sm text-blue-700">
+                  <ul className="list-disc list-inside space-y-1">
+                    <li><strong>No Access:</strong> Cannot see this field</li>
+                    <li><strong>View Only:</strong> Can see field value but cannot edit</li>
+                    <li><strong>View & Edit:</strong> Can see and modify field values</li>
+                    <li><strong>Full Control:</strong> Can view, edit, and manage field permissions</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-lg font-medium text-gray-900 mb-4">Role-based Permissions</h4>
+            <div className="space-y-4">
+              {Object.values(USER_ROLES).map((role) => (
+                <div key={role} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center">
+                    {role === USER_ROLES.ADMIN && <ShieldCheck className="h-5 w-5 text-red-600 mr-2" />}
+                    {role === USER_ROLES.MANAGER && <Shield className="h-5 w-5 text-blue-600 mr-2" />}
+                    {role === USER_ROLES.USER && <ShieldX className="h-5 w-5 text-gray-600 mr-2" />}
+                    <span className="font-medium text-gray-900 capitalize">{role}</span>
+                  </div>
+                  <div className="w-48">
+                    <FormField
+                      name={`permission-${role}`}
+                      type="select"
+                      value={permissionData[role] || FIELD_PERMISSIONS.VIEW}
+                      onChange={(e) => handlePermissionChange(role, e.target.value)}
+                      options={getPermissionOptions()}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-3 pt-4 border-t">
+            <button
+              type="button"
+              onClick={() => setShowPermissionModal(false)}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSavePermissions}
+              className="px-4 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-primary/90"
+            >
+              Save Permissions
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   )

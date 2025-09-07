@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: hsl(220, 98%, 61%);
+  --accent: hsl(164, 98%, 39%);
+  --secondary: hsl(220, 14%, 71%);
+  --success: hsl(134, 61%, 41%);
+  --warning: hsl(43, 94%, 54%);
+  --error: hsl(0, 78%, 52%);
+  --surface: hsl(0, 0%, 100%);
+  --background: hsl(0, 0%, 98%);
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--background);
+}
+
+.gradient-bg {
+  background: linear-gradient(to bottom right, var(--primary), var(--accent));
+}
+
+.glass-effect {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
